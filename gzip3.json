@@ -1,0 +1,151 @@
+{
+  "processes": [
+    {
+      "name": "split",
+      "function": "amqpCommand",
+      "type": "dataflow",
+      "config": {
+        "executor": {
+          "executable": "split",
+          "args": [
+            "-d",
+            "-a",
+            6,
+            "-l",
+            3,
+            "/etc/passwd",
+            "file."
+          ]
+        }
+      },
+      "ins": [
+        0
+      ],
+      "outs": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "name": "gzip0",
+      "function": "amqpCommand",
+      "type": "dataflow",
+      "config": {
+        "executor": {
+          "executable": "gzip",
+          "args": [
+            "-f",
+            "file.000000"
+          ]
+        }
+      },
+      "ins": [
+        1
+      ],
+      "outs": [
+        4
+      ]
+    },
+    {
+      "name": "gzip1",
+      "function": "amqpCommand",
+      "type": "dataflow",
+      "config": {
+        "executor": {
+          "executable": "gzip",
+          "args": [
+            "-f",
+            "file.000001"
+          ]
+        }
+      },
+      "ins": [
+        2
+      ],
+      "outs": [
+        5
+      ]
+    },
+    {
+      "name": "gzip2",
+      "function": "amqpCommand",
+      "type": "dataflow",
+      "config": {
+        "executor": {
+          "executable": "gzip",
+          "args": [
+            "-f",
+            "file.000002"
+          ]
+        }
+      },
+      "ins": [
+        3
+      ],
+      "outs": [
+        6
+      ]
+    },
+    {
+      "name": "tar",
+      "function": "amqpCommand",
+      "type": "dataflow",
+      "config": {
+        "executor": {
+          "executable": "tar",
+          "args": [
+            "cvf",
+            "tarball.tar",
+            "file.000000.gz",
+            "file.000001.gz",
+            "file.000002.gz"
+          ]
+        }
+      },
+      "ins": [
+        4,
+        5,
+        6
+      ],
+      "outs": [
+        7
+      ]
+    }
+  ],
+  "signals": [
+    {
+      "name": "/etc/passwd",
+      "data": [
+        "/etc/passwd"
+      ]
+    },
+    {
+      "name": "file.000000"
+    },
+    {
+      "name": "file.000001"
+    },
+    {
+      "name": "file.000002"
+    },
+    {
+      "name": "file.000000.gz"
+    },
+    {
+      "name": "file.000001.gz"
+    },
+    {
+      "name": "file.000002.gz"
+    },
+    {
+      "name": "tarball.tar"
+    }
+  ],
+  "ins": [
+    0
+  ],
+  "outs": [
+    7
+  ]
+}

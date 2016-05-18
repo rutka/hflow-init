@@ -1,12 +1,20 @@
 # hflow-init
 HyperFlow initialization
 
-Aby uruchomić infrastrukturę HyperFlow należy uchruchomić skrypt hyperflow_pilot_job.sh podając jako pierwszy argument wywołania walltime np. 00:10:00, natomiast jako drugi argument wywołąnia skrypt inicjalizujący kolejkę rabbitmq:
+Aby uruchomić infrastrukturę HyperFlow należy uchruchomić skrypt z klienta hyperfow-client:
 
-./hyperflow_pilot_job.sh 00:10:00 init_amqp.sh
+./hflowc setupgrid
 
-Należy odczekać, aż kolejka zeusowa uruchomi nasz skrypt, czyli status zadania będzie runnig, a następnie uruchomić kolejne skrypty przyjmujące jako pierwszy argument walltime, natomiast jako drugi argument skrypt init_executor.sh, który uruchamia executora oraz run_ellipsoids.sh który wykona przepływ amqpwf.json znajdujący się .hyperflow/ellipsoids/js/. Przepływ można wygenerować tak jak to jest opisane tutaj https://github.com/malawski/ellipsoids. Poniżej znajdują się komendy do wykonania:
 
-./hyperflow_pilot_job.sh 00:05:00 init_executor.sh
+Następnie należy odczekać, aż zadanie pilotażowe się wykona i zostaną nam przydzielone zasoby obliczeniowe. Oczekując można sprawdzić stan zadania pilotażowego za pomocą komendy:
 
-./hyperflow_pilot_job.sh 00:05:00 run_ellipsoids.sh
+./hflowc healthcheckgrid
+
+Gdy status zadania będzie runnig oznacza to, że infrastruktura jest już gotowa. Można uruchomić kolejne polecenie uruchamiające executora:
+
+./hflowc initexecutor
+
+Przykładowe wykonanie workflowu split and gzip:
+
+./hflowc runwf http://`cat ~/.hyperflow/ip`:44464 gzip3.json
+
