@@ -40,13 +40,17 @@ function loadConfigs(configLocations, cb) {
                         cb(null, {});
                         return;
                     }
+
                     try {
-                        cb(null, JSON.parse(rawConfig));
+                        if(absoluteConfigLocation.endsWith(".json")) {
+                            cb(null, JSON.parse(rawConfig));
+                        } else if (absoluteConfigLocation.endsWith(".yml")) {
+                            cb(null, YAML.parse(rawConfig));
+                        }
                     } catch (err) {
                         console.log("Unable to parse config from: ", absoluteConfigLocation);
-                        //todo
-                        cb(null, YAML.parse(rawConfig));
                     }
+
                 });
             } else {
                 cb(null, {});

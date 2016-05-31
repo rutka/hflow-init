@@ -231,15 +231,12 @@ function chooseCommand(opts, config) {
                 });
             });
         } else if (config.type == 'plgrid') {
-            var workerCount = opts['--workers'] ? +opts['--workers'] : 1;
+            var workerCount = opts['--workers'] ? + opts['--workers'] : 1;
             console.log("Run configuration for grid");
             console.log("Port: " + config.port);
             console.log("Walltime: " + config.walltime);
             console.log("Workdir: " + config.workdir);
             console.log("Worker count: " + workerCount);
-
-
-            console.log('~/.hyperflow/scripts_kopia/setup.sh '+ workerCount + ' ' + config.walltime + ' ' + config.port + ' ' + config.workdir);
 
             exec('~/.hyperflow/scripts_kopia/setup.sh '+ workerCount + ' ' + config.walltime + ' ' + config.port + ' ' + config.workdir,
                 function (error, stdout, stderr) {
