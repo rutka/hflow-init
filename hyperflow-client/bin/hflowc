@@ -57,178 +57,199 @@ utils.loadConfigs(configLocations, function (localConfigs) {
 function chooseCommand(opts, config) {
     if (opts.setup) {
 
-        //read proxy
-        utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
-            if (err) {
-                console.log('Error reading proxy! forgot to do a grid-proxy-init?', err);
-                return;
-            }
-
-            var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
-            var basedProxy = new Buffer(proxy).toString('base64');
-            var workerCount = opts['--workers'] ? +opts['--workers'] : 1;
-            var applianceSetId;
-            var shasum = crypto.createHash('sha512');
-            shasum.update(proxy);
-            var shaProxy = shasum.digest('hex');
-
-            //create appliance set
-            atmoClient.newApplianceSet(config.wfApplianceSetName, null, function (err, applianceSet) {
+        if(config.type == 'aws') {
+            //read proxy
+            utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
                 if (err) {
-                    console.log('Error creating appliance set!', err);
+                    console.log('Error reading proxy! forgot to do a grid-proxy-init?', err);
                     return;
                 }
-                console.log('Appliance set ' + applianceSet['name'] + ' created successfully!');
-                applianceSetId = applianceSet.id;
+
+                var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
+                var basedProxy = new Buffer(proxy).toString('base64');
+                var workerCount = opts['--workers'] ? +opts['--workers'] : 1;
+                var applianceSetId;
+                var shasum = crypto.createHash('sha512');
+                shasum.update(proxy);
+                var shaProxy = shasum.digest('hex');
+
+                //create appliance set
+                atmoClient.newApplianceSet(config.wfApplianceSetName, null, function (err, applianceSet) {
+                    if (err) {
+                        console.log('Error creating appliance set!', err);
+                        return;
+                    }
+                    console.log('Appliance set ' + applianceSet['name'] + ' created successfully!');
+                    applianceSetId = applianceSet.id;
 
 
-                function waitForVirtualMachine(vmId, cbWait, cb) {
-                    atmoClient.getVirtualMachine(vmId, function (err, virtualMachine) {
-                        if (err) {
-                            cb(err);
-                            return;
-                        }
-                        if (virtualMachine.state == 'active') {
-                            cb(null, virtualMachine);
-                            return;
-                        }
-                        cbWait();
-                        setTimeout(function () {
-                            waitForVirtualMachine(vmId, cbWait, cb)
-                        }, 2000);
-                    });
-                }
-
-                function waitForAppliance(applianceId, cbWait, cb) {
-                    atmoClient.getAppliance(applianceId, function (err, appliance) {
-                        if (err) {
-                            cb(err);
-                            return;
-                        }
-                        if (appliance.virtual_machine_ids.length > 0) {
-                            cb(null, appliance);
-                            return;
-                        }
-                        cbWait();
-                        setTimeout(function () {
-                            waitForAppliance(applianceId, cbWait, cb)
-                        }, 500);
-                    });
-                }
-
-                //create wfMain vm
-                atmoClient.newAppliance(
-                    {
-                        setId: applianceSetId,
-                        name: 'wfmain',
-                        templateId: config.wfMainId,
-                        params: {
-                            proxy: basedProxy
-                        }
-                    }, function (err, appliance) {
-                        if (err) {
-                            console.log('Error creating appliance!', err);
-                            return;
-                        }
-                        console.log('WfMain created successfully!');
-
-                        //wait for wfMain to become active
-
-                        var applianceId = appliance.id;
-                        //var vmId = appliance.virtual_machine_ids[0];
-
-                        waitForAppliance(applianceId, function () {
-                            process.stdout.write('.');
-                        }, function (err, appliance) {
+                    function waitForVirtualMachine(vmId, cbWait, cb) {
+                        atmoClient.getVirtualMachine(vmId, function (err, virtualMachine) {
                             if (err) {
-                                console.log('Error getting appliance info!', err);
+                                cb(err);
                                 return;
                             }
-                            console.log('wfMain has vmId!');
-                            var vmId = appliance.virtual_machine_ids[0];
-                            atmoClient.getVirtualMachine(vmId, function (err, virtualMachine) {
+                            if (virtualMachine.state == 'active') {
+                                cb(null, virtualMachine);
+                                return;
+                            }
+                            cbWait();
+                            setTimeout(function () {
+                                waitForVirtualMachine(vmId, cbWait, cb)
+                            }, 2000);
+                        });
+                    }
+
+                    function waitForAppliance(applianceId, cbWait, cb) {
+                        atmoClient.getAppliance(applianceId, function (err, appliance) {
+                            if (err) {
+                                cb(err);
+                                return;
+                            }
+                            if (appliance.virtual_machine_ids.length > 0) {
+                                cb(null, appliance);
+                                return;
+                            }
+                            cbWait();
+                            setTimeout(function () {
+                                waitForAppliance(applianceId, cbWait, cb)
+                            }, 500);
+                        });
+                    }
+
+                    //create wfMain vm
+                    atmoClient.newAppliance(
+                        {
+                            setId: applianceSetId,
+                            name: 'wfmain',
+                            templateId: config.wfMainId,
+                            params: {
+                                proxy: basedProxy
+                            }
+                        }, function (err, appliance) {
+                            if (err) {
+                                console.log('Error creating appliance!', err);
+                                return;
+                            }
+                            console.log('WfMain created successfully!');
+
+                            //wait for wfMain to become active
+
+                            var applianceId = appliance.id;
+                            //var vmId = appliance.virtual_machine_ids[0];
+
+                            waitForAppliance(applianceId, function () {
+                                process.stdout.write('.');
+                            }, function (err, appliance) {
                                 if (err) {
-                                    console.log('Error getting vm!', err);
+                                    console.log('Error getting appliance info!', err);
                                     return;
                                 }
-                                process.stdout.write('waiting for wfMain to start');
-                                waitForVirtualMachine(vmId, function () {
-                                    process.stdout.write('.');
-                                }, function (err, virtualMachine) {
+                                console.log('wfMain has vmId!');
+                                var vmId = appliance.virtual_machine_ids[0];
+                                atmoClient.getVirtualMachine(vmId, function (err, virtualMachine) {
                                     if (err) {
-                                        console.log('Error waiting for vm!', err);
+                                        console.log('Error getting vm!', err);
                                         return;
                                     }
-
-                                    console.log('wfMain is active!');
-                                    //get and print hf location
-                                    atmoClient.getPortMappings(function (err, portMappings) {
-                                        var hfIp,
-                                            hfPort,
-                                            portMappingTemplateId;
+                                    process.stdout.write('waiting for wfMain to start');
+                                    waitForVirtualMachine(vmId, function () {
+                                        process.stdout.write('.');
+                                    }, function (err, virtualMachine) {
                                         if (err) {
-                                            console.log('Error getting port mappings!', err);
+                                            console.log('Error waiting for vm!', err);
                                             return;
                                         }
-                                        portMappings.forEach(function (portMapping) {
-                                            if (portMapping.virtual_machine_id == vmId) {
-                                                //found our vm!
-                                                hfIp = portMapping.public_ip;
-                                                hfPort = portMapping.source_port;
-                                                portMappingTemplateId = portMapping.port_mapping_template_id;
-                                                atmoClient.getPortMappingTemplate(portMappingTemplateId, function (err, portMappingTemplate) {
+
+                                        console.log('wfMain is active!');
+                                        //get and print hf location
+                                        atmoClient.getPortMappings(function (err, portMappings) {
+                                            var hfIp,
+                                                hfPort,
+                                                portMappingTemplateId;
+                                            if (err) {
+                                                console.log('Error getting port mappings!', err);
+                                                return;
+                                            }
+                                            portMappings.forEach(function (portMapping) {
+                                                if (portMapping.virtual_machine_id == vmId) {
+                                                    //found our vm!
+                                                    hfIp = portMapping.public_ip;
+                                                    hfPort = portMapping.source_port;
+                                                    portMappingTemplateId = portMapping.port_mapping_template_id;
+                                                    atmoClient.getPortMappingTemplate(portMappingTemplateId, function (err, portMappingTemplate) {
+                                                        if (err) {
+                                                            console.log('Error getting port mapping template!', err);
+                                                            return;
+                                                        }
+                                                        var targetPort = portMappingTemplate.target_port;
+                                                        if (targetPort == 443) {
+                                                            console.log('Found port mapping ' + hfPort + '->' + targetPort + ', hfmain endoint: http://' + hfIp + ':' + hfPort);
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        });
+
+                                        var rabbitUrl = 'amqp://hf:' + shaProxy + '@' + virtualMachine.ip + "/%2f";
+
+                                        //start workers
+
+                                        async.times(workerCount, function (n, cb) {
+                                            var workerName = 'wfworker_' + n;
+                                            atmoClient.newAppliance(
+                                                {
+                                                    setId: applianceSetId,
+                                                    name: workerName,
+                                                    templateId: config.wfWorkerId,
+                                                    params: {
+                                                        rabbitmq_location: rabbitUrl,
+                                                        proxy: basedProxy
+                                                    }
+                                                }, function (err, appliance) {
                                                     if (err) {
-                                                        console.log('Error getting port mapping template!', err);
+                                                        console.log('Error creating worker!', err);
+                                                        cb(err);
                                                         return;
                                                     }
-                                                    var targetPort = portMappingTemplate.target_port;
-                                                    if (targetPort == 443) {
-                                                        console.log('Found port mapping ' + hfPort + '->' + targetPort + ', hfmain endoint: http://' + hfIp + ':' + hfPort);
-                                                    }
-                                                });
+                                                    console.log('starting ' + workerName);
+                                                    cb(null);
+                                                }
+                                            )
+                                        }, function (err, results) {
+                                            if (err) {
+                                                console.log('Error creating workers!', err);
+                                                return;
                                             }
+                                            console.log('Workers created');
                                         });
-                                    });
-
-                                    var rabbitUrl = 'amqp://hf:' + shaProxy + '@' + virtualMachine.ip + "/%2f";
-
-                                    //start workers
-
-                                    async.times(workerCount, function (n, cb) {
-                                        var workerName = 'wfworker_' + n;
-                                        atmoClient.newAppliance(
-                                            {
-                                                setId: applianceSetId,
-                                                name: workerName,
-                                                templateId: config.wfWorkerId,
-                                                params: {
-                                                    rabbitmq_location: rabbitUrl,
-                                                    proxy: basedProxy
-                                                }
-                                            }, function (err, appliance) {
-                                                if (err) {
-                                                    console.log('Error creating worker!', err);
-                                                    cb(err);
-                                                    return;
-                                                }
-                                                console.log('starting ' + workerName);
-                                                cb(null);
-                                            }
-                                        )
-                                    }, function (err, results) {
-                                        if (err) {
-                                            console.log('Error creating workers!', err);
-                                            return;
-                                        }
-                                        console.log('Workers created');
                                     });
                                 });
                             });
-                        });
-                    }
-                );
+                        }
+                    );
+                });
             });
-        });
+        } else if (config.type == 'plgrid') {
+            var workerCount = opts['--workers'] ? +opts['--workers'] : 1;
+            console.log("Run configuration for grid");
+            console.log("Port: " + config.port);
+            console.log("Walltime: " + config.walltime);
+            console.log("Workdir: " + config.workdir);
+            console.log("Worker count: " + workerCount);
+
+
+            console.log('~/.hyperflow/scripts_kopia/setup.sh '+ workerCount + ' ' + config.walltime + ' ' + config.port + ' ' + config.workdir);
+
+            exec('~/.hyperflow/scripts_kopia/setup.sh '+ workerCount + ' ' + config.walltime + ' ' + config.port + ' ' + config.workdir,
+                function (error, stdout, stderr) {
+                	console.log(stdout);
+                    if (error !== null) {
+                        console.log('Error in init HyperFlow: ' + error);
+                    }
+                });
+
+        }
     } else if (opts.runwf) {
         utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
             if (err) {

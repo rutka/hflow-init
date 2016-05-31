@@ -1,6 +1,7 @@
 var fs = require('fs'),
     expandHomeDir = require('expand-home-dir'),
-    async = require('async');
+    async = require('async'),
+    YAML = require('yamljs');
 
 function readFile(fileLocation, opts, cb) {
     fs.stat(fileLocation, function (err, stats) {
@@ -33,7 +34,7 @@ function loadConfigs(configLocations, cb) {
         var absoluteConfigLocation = expandHomeDir(configLocation);
         fs.exists(absoluteConfigLocation, function (exists) {
             if (exists) {
-                readFile(absoluteConfigLocation, function (err, rawConfig) {
+                readFile(absoluteConfigLocation, null, function (err, rawConfig) {
                     if (err) {
                         console.log("Unable to read config from: ", absoluteConfigLocation);
                         cb(null, {});
@@ -43,6 +44,8 @@ function loadConfigs(configLocations, cb) {
                         cb(null, JSON.parse(rawConfig));
                     } catch (err) {
                         console.log("Unable to parse config from: ", absoluteConfigLocation);
+                        //todo
+                        cb(null, YAML.parse(rawConfig));
                     }
                 });
             } else {

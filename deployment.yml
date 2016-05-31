@@ -1,0 +1,4 @@
+type: plgrid
+port: 45656
+walltime: 00:10:00
+workdir: $STORAGE/hyperflow

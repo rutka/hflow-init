@@ -1,0 +1,6 @@
+{
+	"type" : "grid",
+	"port" : "45656",
+	"walltime" : "00:15:00",
+	"workdir" : "$STORAGE/hyperflow"
+}

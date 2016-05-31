@@ -8,18 +8,27 @@ var wfWorkerId = process.env.WF_WORDKER_ID ? process.env.WF_WORDKER_ID : 63;
 
 var wfApplianceSetName = 'hfworkflow';
 
+var type = 'plgrid';
+var port = process.env.PORT ? process.env.PORT : '44464';
+var walltime = '00:10:00';
+var workdir = '$STORAGE/hyperflow';
+
 //default location of user stored config for hflowc
 var configLocations = [
-    '~/.hflow.config.json'
+    '~/deployment.yml'
 ];
-
 
 module.exports.default_config = {
     proxyLocation: proxyLocation,
     atmoLocation: atmoLocation,
     wfMainId: wfMainId,
     wfWorkerId: wfWorkerId,
-    wfApplianceSetName: wfApplianceSetName
+    wfApplianceSetName: wfApplianceSetName,
+
+    type : type,
+    port: port,
+    walltime: walltime,
+    workdir: workdir
 };
 
 module.exports.configLocations = configLocations;
