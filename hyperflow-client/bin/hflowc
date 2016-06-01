@@ -236,9 +236,10 @@ function chooseCommand(opts, config) {
             console.log("Port: " + config.port);
             console.log("Walltime: " + config.walltime);
             console.log("Workdir: " + config.workdir);
+            console.log("Scriptsdir: " + config.scriptsdir);
             console.log("Worker count: " + workerCount);
 
-            exec('~/.hyperflow/scripts_kopia/setup.sh '+ workerCount + ' ' + config.walltime + ' ' + config.port + ' ' + config.workdir,
+            exec(config.scriptsdir + 'setup.sh '+ workerCount + ' ' + config.walltime + ' ' + config.port + ' ' + config.workdir,
                 function (error, stdout, stderr) {
                 	console.log(stdout);
                     if (error !== null) {
