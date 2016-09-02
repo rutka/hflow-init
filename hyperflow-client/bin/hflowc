@@ -15,7 +15,6 @@ Usage:\n\
     hflowc runwf <hf_location> <workflow.json> [-p <proxy_location>] [-c <config_location>]\n\
     hflowc teardown [-p <proxy_location>] [-c <config_location>]\n\
     hflowc healthcheck [-p <proxy_location>] [-c <config_location>]\n\
-    hflowc setupgrid \n\
     hflowc initexecutor \n\
     hflowc healthcheckgrid \n\
     \n\
@@ -238,8 +237,10 @@ function chooseCommand(opts, config) {
             console.log("Workdir: " + config.workdir);
             console.log("Scriptsdir: " + config.scriptsdir);
             console.log("Worker count: " + workerCount);
+            console.log("Grant: " + config.grant);
 
-            exec(config.scriptsdir + 'setup.sh ' + workerCount + ' ' + config.walltime + ' ' + config.port + ' ' + config.workdir,
+            exec(config.scriptsdir + 'setup.sh ' + workerCount + ' ' + config.walltime + ' ' + config.port 
+		+ ' ' + config.workdir + ' ' + config.scriptsdir + ' ' + config.grant,
                 function (error, stdout, stderr) {
                 	console.log(stdout);
                     if (error !== null) {
@@ -353,16 +354,6 @@ function chooseCommand(opts, config) {
                 process.exit(0);
             });
         });
-    } else if (opts.setupgrid) {
-        console.log('Init HyperFlow');
-
-        exec('~/.hyperflow/scripts/hyperflow_pilot_job.sh 00:10:00 ~/.hyperflow/scripts/init_hflow_main.sh > ~/.hyperflow/env/hyperflow_job_id',
-            function (error, stdout, stderr) {  
-                if (error !== null) {
-                    console.log('Error in init HyperFlow: ' + error);
-                }
-            });
-        
     } else if (opts.initexecutor) {
         console.log('Init Executor');
 

@@ -1,10 +1,10 @@
 #!/bin/sh
 
-if [ $# -eq 2 ]; then
-    qsub -A plgrutka2016b -l walltime=$1 $2
-elif [ $# -gt 2 ]; then
-	qsub -A plgrutka2016b -l walltime=$1 -v PORT="$3",WORKDIR="$4" $2
+if [ $# -eq 3 ]; then
+    qsub -A $3 -l walltime=$1 $2
+elif [ $# -eq 5 ]; then
+	qsub -A $3 -l walltime=$1 -v PORT="$4",WORKDIR="$5" $2
 else
-    echo "Usage $0 walltime script_name [port] [workdir]"
+    echo "Usage $0 walltime script_name grand [port] [workdir]"
 fi
 

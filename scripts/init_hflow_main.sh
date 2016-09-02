@@ -1,6 +1,6 @@
 #!/bin/sh
 
-grep `hostname` /etc/hosts | awk '{print $1}' > ~/.hyperflow/ip_hyperflow
+grep `hostname` /etc/hosts | awk '{print $1}' > ~/.hyperflow/env/ip_hyperflow
 module add erlang
 export PATH=$PATH:~/.hyperflow/node_modules/.bin:~/.hyperflow/node-v0.12.2-linux-x64/bin/
 ~/.hyperflow/rabbitmq_server-3.5.1/sbin/rabbitmq-server &
