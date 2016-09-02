@@ -236,9 +236,10 @@ function chooseCommand(opts, config) {
             console.log("Port: " + config.port);
             console.log("Walltime: " + config.walltime);
             console.log("Workdir: " + config.workdir);
+            console.log("Scriptsdir: " + config.scriptsdir);
             console.log("Worker count: " + workerCount);
 
-            exec('~/.hyperflow/scripts_kopia/setup.sh '+ workerCount + ' ' + config.walltime + ' ' + config.port + ' ' + config.workdir,
+            exec(config.scriptsdir + 'setup.sh ' + workerCount + ' ' + config.walltime + ' ' + config.port + ' ' + config.workdir,
                 function (error, stdout, stderr) {
                 	console.log(stdout);
                     if (error !== null) {
@@ -250,6 +251,7 @@ function chooseCommand(opts, config) {
     } else if (opts.runwf) {
         utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
             if (err) {
+
                 console.log('Error reading proxy! forgot to do a grid-proxy-init?', err);
                 return;
             }
@@ -274,51 +276,62 @@ function chooseCommand(opts, config) {
             });
         });
     } else if (opts.teardown) {
-        //read proxy
-        utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
-            if (err) {
-                console.log('Error reading proxy! forgot to do a grid-proxy-init?', err);
-                return;
-            }
-
-            var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
-            var basedProxy = new Buffer(proxy).toString('base64');
-
-            atmoClient.getApplianceSets(function (err, applianceSets) {
+        if(config.type == 'aws') {
+            //read proxy
+            utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
                 if (err) {
-                    console.log('Error getting appliance sets!', err);
+                    console.log('Error reading proxy! forgot to do a grid-proxy-init?', err);
                     return;
                 }
-                var setsToRemove = {};
-                applianceSets.forEach(function (applianceSet) {
-                    if (applianceSet['name'] == config.wfApplianceSetName) {
-                        setsToRemove[applianceSet.id] = applianceSet['name'];
+
+                var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
+                var basedProxy = new Buffer(proxy).toString('base64');
+
+                atmoClient.getApplianceSets(function (err, applianceSets) {
+                    if (err) {
+                        console.log('Error getting appliance sets!', err);
+                        return;
+                    }
+                    var setsToRemove = {};
+                    applianceSets.forEach(function (applianceSet) {
+                        if (applianceSet['name'] == config.wfApplianceSetName) {
+                            setsToRemove[applianceSet.id] = applianceSet['name'];
+                        }
+                    });
+
+                    //let's remove appliance sets
+                    if (Object.keys(setsToRemove).length != 0) {
+                        async.map(Object.keys(setsToRemove), function (applianceSetId, cb) {
+                            console.log('Removing appliance set: ' + setsToRemove[applianceSetId]);
+                            atmoClient.deleteApplianceSet(applianceSetId, function (err) {
+                                if (err) {
+                                    cb(err);
+                                    return;
+                                }
+                                cb();
+                            });
+                        }, function (err, result) {
+                            if (err) {
+                                console.log('Error deleting appliance set!', err);
+                                return;
+                            }
+                            console.log('Done.');
+                        });
+                    } else {
+                        console.log('Nothing to do.');
+                    }
+                });
+            });
+        } else if (config.type == 'plgrid') {
+
+            exec('qdel `cat ~/.hyperflow/env/hyperflow_job_id` `cat ~/.hyperflow/env/executors_job_id`',
+                function (error, stdout, stderr) {
+                    if (error !== null) {
+                        console.log('Error in teardown grid: ' + error);
                     }
                 });
 
-                //let's remove appliance sets
-                if (Object.keys(setsToRemove).length != 0) {
-                    async.map(Object.keys(setsToRemove), function (applianceSetId, cb) {
-                        console.log('Removing appliance set: ' + setsToRemove[applianceSetId]);
-                        atmoClient.deleteApplianceSet(applianceSetId, function (err) {
-                            if (err) {
-                                cb(err);
-                                return;
-                            }
-                            cb();
-                        });
-                    }, function (err, result) {
-                        if (err) {
-                            console.log('Error deleting appliance set!', err);
-                            return;
-                        }
-                        console.log('Done.');
-                    });
-                } else {
-                    console.log('Nothing to do.');
-                }
-            });
-        });
+        }
     } else if (opts.healthcheck) {
         //read proxy
         utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {

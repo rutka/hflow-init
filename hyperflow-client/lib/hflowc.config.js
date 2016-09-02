@@ -10,8 +10,9 @@ var wfApplianceSetName = 'hfworkflow';
 
 var type = 'plgrid';
 var port = process.env.PORT ? process.env.PORT : '44464';
-var walltime = '00:10:00';
-var workdir = '$STORAGE/hyperflow';
+var walltime = process.env.WALLTIME ? process.env.WALLTIME : '00:10:00';
+var workdir = process.env.WORKDIR ? process.env.WORKDIR : '$STORAGE/hyperflow';
+var scriptsdir = process.env.SCRIPTSDIR ? process.env.SCRIPTSDIR :'~/.hyperflow/scripts_kopia/'
 
 //default location of user stored config for hflowc
 var configLocations = [
@@ -28,7 +29,8 @@ module.exports.default_config = {
     type : type,
     port: port,
     walltime: walltime,
-    workdir: workdir
+    workdir: workdir,
+    scriptsdir: scriptsdir
 };
 
 module.exports.configLocations = configLocations;

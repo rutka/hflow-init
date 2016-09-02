@@ -12,8 +12,8 @@
             "-a",
             6,
             "-l",
-            3,
-            "/etc/passwd",
+            11    
+	    "/etc/passwd",
             "file."
           ]
         }

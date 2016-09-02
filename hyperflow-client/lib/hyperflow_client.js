@@ -23,7 +23,7 @@ HyperFlowClient.prototype.runWorkflow = function (workflow, cb) {
         },
         rejectUnauthorized: false
     }, function (res) {
-        //console.log(res.statusCode);
+        //console.log(res);
         if (res.statusCode != 201) {
             // console.log(res);
             cb(new Error('error running wf: ' + res.statusCode + ', ' + res.statusMessage));
