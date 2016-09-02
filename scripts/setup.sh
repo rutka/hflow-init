@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [ $# -ne 6 ]; then
-	echo "Usage $0 workerCount walltime port workdir"
+	echo "Usage $0 workerCount walltime port workdir scriptdir grant"
 	echo $#
 else 
 
