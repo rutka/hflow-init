@@ -1,20 +1,12 @@
 # hflow-init
-HyperFlow initialization
+
+W projekcie znajduje się skopiowany [hyperflow-client](https://github.com/dice-cyfronet/hyperflow-client) z wprowadzonymi zmianami, pozwalającymi na uruchomienie infrastruktury w środowisku gridowym.
 
 Aby uruchomić infrastrukturę HyperFlow należy uchruchomić skrypt z klienta hyperfow-client:
 
-./hflowc setupgrid
+`./hflowc setup
 
+Następnie należy odczekać na inforamcję zwrotną na jakim adresie został uruchomiony silnik HyperFlow. W tym momencie nasze środowisko jest już gotowe i można uruchomić przepływ prac. Przy wykonywaniu komendy należy podać adres jaki otrzymaliśmy przy poleceniu `hflowc setup`. Przykładowe wykonanie workflowu split and gzip:
 
-Następnie należy odczekać, aż zadanie pilotażowe się wykona i zostaną nam przydzielone zasoby obliczeniowe. Oczekując można sprawdzić stan zadania pilotażowego za pomocą komendy:
-
-./hflowc healthcheckgrid
-
-Gdy status zadania będzie runnig oznacza to, że infrastruktura jest już gotowa. Można uruchomić kolejne polecenie uruchamiające executora:
-
-./hflowc initexecutor
-
-Przykładowe wykonanie workflowu split and gzip:
-
-./hflowc runwf http://`cat ~/.hyperflow/ip`:44464 gzip3.json
+`./hflowc runwf http://10.10.2.173:44464 gzip3.json
 
