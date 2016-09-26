@@ -4,6 +4,8 @@ mkdir -p ~/.hyperflow
 
 cd ~/.hyperflow
 
+mkdir env
+
 # install node
 wget http://nodejs.org/dist/v0.12.2/node-v0.12.2-linux-x64.tar.gz
 tar zxvf node-v0.12.2-linux-x64.tar.gz 
