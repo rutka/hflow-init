@@ -12,6 +12,8 @@ else
 	SCRIPTDIR=$5
 	GRANT=$6
 
+	rm -f ~/.hyperflow/env/*
+
 	echo $PORT > ~/.hyperflow/env/port
 
 	echo "Initiating Queue and HyperFlow"
