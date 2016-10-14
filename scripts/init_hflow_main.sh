@@ -7,5 +7,5 @@ export PATH=$PATH:~/.hyperflow/node_modules/.bin:~/.hyperflow/node-v0.12.2-linux
 ~/.hyperflow/redis-3.0.1/src/redis-server &
 sleep 1
 
-hflow start-server -p  hyperflow-monitoring-plugin &
+hflow start-server & #-p hyperflow-monitoring-plugin &
 sleep $PBS_WALLTIME
