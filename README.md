@@ -8,6 +8,10 @@ Aby można było korzystać z systemu należy wyeksportować `noda` do zmiennej 
 
 `export PATH=$PATH:~/.hyperflow/node-v0.12.2-linux-x64/bin/`
 
+Kolejnym krokiej jest pobranie wszystkich zależności potrzebnych dla `hyperflow-client` poprzez polecenie:
+
+`npm install`
+
 Następnie w pliku `hflowc.config.js` znajdującym się w katalogu `hyperflow-client/lib` należy ustawić zmienną `scriptsdir`, czyli wskazać miejsce, w którym znajduje się katalog `scripts` z tego repozytorium. Domyślnym miejscem jest `~/.hyperflow/scripts_kopia/`.
 
 W pliku `hflowc.config.js` znajdującym się w katalogu `hyperflow-client/lib` należy ustawić zmienną `grant`, czyli osobisty grant, na którym będzie uruchamiana infrastruktura.
