@@ -8,7 +8,7 @@ Aby można było korzystać z systemu należy wyeksportować `noda` do zmiennej 
 
 `export PATH=$PATH:~/.hyperflow/node-v0.12.2-linux-x64/bin/`
 
-Kolejnym krokiej jest pobranie wszystkich zależności potrzebnych dla `hyperflow-client` poprzez polecenie:
+Kolejnym krokiem jest pobranie wszystkich zależności potrzebnych dla `hyperflow-client` poprzez polecenie:
 
 `npm install`
 

@@ -12,7 +12,7 @@ var type = 'plgrid';
 var port = process.env.PORT ? process.env.PORT : '44464';
 var walltime = process.env.WALLTIME ? process.env.WALLTIME : '00:10:00';
 var workdir = process.env.WORKDIR ? process.env.WORKDIR : '$STORAGE/hyperflow';
-var scriptsdir = process.env.SCRIPTSDIR ? process.env.SCRIPTSDIR : '~/.hyperflow/scripts_kopia/'
+var scriptsdir = process.env.SCRIPTSDIR ? process.env.SCRIPTSDIR : '~/hflow-init/scripts/'
 var grant = 'plgrid2016b'
 
 //default location of user stored config for hflowc
