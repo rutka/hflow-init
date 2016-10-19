@@ -12,7 +12,7 @@ Kolejnym krokiem jest pobranie wszystkich zależności potrzebnych dla `hyperflo
 
 `npm install`
 
-Następnie w pliku `hflowc.config.js` znajdującym się w katalogu `hyperflow-client/lib` należy ustawić zmienną `scriptsdir`, czyli wskazać miejsce, w którym znajduje się katalog `scripts` z tego repozytorium. Domyślnym miejscem jest `~/.hyperflow/scripts_kopia/`.
+Następnie w pliku `hflowc.config.js` znajdującym się w katalogu `hyperflow-client/lib` należy ustawić zmienną `scriptsdir`, czyli wskazać miejsce, w którym znajduje się katalog `scripts` z tego repozytorium. Domyślnym miejscem jest `~/hflow-init/scripts/`.
 
 W pliku `hflowc.config.js` znajdującym się w katalogu `hyperflow-client/lib` należy ustawić zmienną `grant`, czyli osobisty grant, na którym będzie uruchamiana infrastruktura.
 

@@ -7,7 +7,8 @@ var docopt = require('docopt').docopt,
     utils = require('../lib/utils.js'),
     configHelper = require('../lib/hflowc.config.js'),
     crypto = require('crypto'),
-    exec = require('child_process').exec;
+    exec = require('child_process').exec,
+    fs = require('fs');
 
 var doc = '\
 Usage:\n\
@@ -15,8 +16,6 @@ Usage:\n\
     hflowc runwf <hf_location> <workflow.json> [-p <proxy_location>] [-c <config_location>]\n\
     hflowc teardown [-p <proxy_location>] [-c <config_location>]\n\
     hflowc healthcheck [-p <proxy_location>] [-c <config_location>]\n\
-    hflowc initexecutor \n\
-    hflowc healthcheckgrid \n\
     \n\
 Options:\n\
     -p <proxy_location>, --proxy <proxy_location>  Location of proxy, defaults to env[X509_USER_PROXY]\n\
@@ -325,56 +324,69 @@ function chooseCommand(opts, config) {
             });
         } else if (config.type == 'plgrid') {
 
-            exec('qdel `cat ~/.hyperflow/env/hyperflow_job_id` `cat ~/.hyperflow/env/executors_job_id`',
-                function (error, stdout, stderr) {
-                    if (error !== null) {
-                        console.log('Error in teardown grid: ' + error);
-                    }
+	    try{ 
+	    	fs.lstatSync(process.env.HOME + '/.hyperflow/env/hyperflow_job_id').isFile();
+
+            	exec('qdel `cat ~/.hyperflow/env/hyperflow_job_id` `cat ~/.hyperflow/env/executors_job_id`',
+                    function (error, stdout, stderr) {
+                    	if (error !== null) {
+		            if (error.message.indexOf('Unknown Job Id') !== -1) {
+			    	console.log('HyperFlow not running');	
+		            } else {
+			    	console.log('Error in teardown grid: ' + error);
+		            }
+                    	}		
                 });
+	    } catch(err) {
+	    	console.log('HyperFlow not running');
+	    }
 
         }
     } else if (opts.healthcheck) {
-        //read proxy
-        utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
-            if (err) {
-                console.log('UNKNOWN: Error reading proxy! forgot to do a grid-proxy-init?', err);
-                process.exit(3);
-            }
-
-            var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
-            var basedProxy = new Buffer(proxy).toString('base64');
-
-            atmoClient.getCloudHealth(function (err) {
+        if(config.type == 'aws') {
+            //read proxy
+            utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
                 if (err) {
-                    console.log('CRITICAL: Error, cloud environment seems unavailable!', err);
-                    process.exit(2);
+                    console.log('UNKNOWN: Error reading proxy! forgot to do a grid-proxy-init?', err);
+                    process.exit(3);
                 }
-                //looks ok, simply exit
-                console.log('OK: Cloud environment seems ok!');
-                process.exit(0);
+
+                var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
+                var basedProxy = new Buffer(proxy).toString('base64');
+
+                atmoClient.getCloudHealth(function (err) {
+                    if (err) {
+                        console.log('CRITICAL: Error, cloud environment seems unavailable!', err);
+                        process.exit(2);
+                    }
+                    //looks ok, simply exit
+                    console.log('OK: Cloud environment seems ok!');
+                    process.exit(0);
+                });
             });
-        });
-    } else if (opts.initexecutor) {
-        console.log('Init Executor');
+        } else if (config.type == 'plgrid') {
+	    try{ 
+	        fs.lstatSync(process.env.HOME + '/.hyperflow/env/hyperflow_job_id').isFile();
 
-        exec('~/.hyperflow/scripts/hyperflow_pilot_job.sh 00:10:00 ~/.hyperflow/scripts/init_executor.sh',
-            function (error, stdout, stderr) {
+                exec('qstat -f `cat ~/.hyperflow/env/hyperflow_job_id` | grep "job_state"',
+            	    function (error, stdout, stderr) {
 
-                if (error !== null) {
-                    console.log('Error in init Executor: ' + error);
-                }
-            });
+		        if (stdout.indexOf('R') !== -1) {
+			    console.log('HyperFlow running');
+		        }
 
-    } else if (opts.healthcheckgrid) {
-
-        exec('qstat -f `cat ~/.hyperflow/env/hyperflow_job_id` | grep "job_state"',
-            function (error, stdout, stderr) {
-
-                console.log(stdout);
-                if (error !== null) {
-                    console.log('Error in healthcheck grid: ' + error);
-                }
-            });
-
-    }
+                        if (error !== null) {
+		            if (error.message.indexOf('Unknown Job Id') !== -1) {
+			        console.log('HyperFlow not running');	
+		            } else {
+			        console.log('Error in healthcheck grid: ' + error);
+		            }
+                    
+                        }
+           	    });
+	    } catch(err) {
+	        console.log('HyperFlow not running');
+	    }
+	}
+    }  
 }
